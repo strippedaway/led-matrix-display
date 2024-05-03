@@ -10,6 +10,12 @@ TimerHandle_t mqttReconnectTimer;
 
 AsyncMqttClient mqttClient;
 
+#define PEOPLE_COUNT_TOPIC "hass-states/sensor/people_inside/state"
+#define SPACE_OPEN_TOPIC "hass-states/binary_sensor/hackerspace_open/state"
+#define SPACE_POWER_TOPIC "hass-states/sensor/hackem_powermeter_bl0942_power/state"
+#define DOWNSTAIRS_CO2_TOPIC "hass-states/sensor/downstairs_co2_value/state"
+#define MATRIX_TEXT_TOPIC "led-matrix/display-text"
+
 char *topic_will;
 
 void PublishToMQTT(const char* type, const char* data) {
@@ -27,25 +33,33 @@ void StartMQTT() {
 }
 
 void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) {
+  bool availableData = true;
+  if(strcmp(payload, "unavailable") == 0)
+    availableData = false;
 
-  char *topic_suc;
-  char *topic_fail;
-  asprintf(&topic_suc, "%s/%s", MQTT_TOPIC, "success");
-  asprintf(&topic_fail, "%s/%s", MQTT_TOPIC, "failed");
-
-  if(strcmp(topic, topic_suc) == 0) {
-  } else if(strcmp(topic, topic_fail) == 0) {
+  if(strcmp(topic, PEOPLE_COUNT_TOPIC) == 0) {
+    if(availableData) people_inside = atoi(payload);
+    else people_inside = -1;
+  } else if(strcmp(topic, SPACE_OPEN_TOPIC) == 0) {
+    if(availableData) space_open = (strcmp(payload, "on") == 0);
+    else space_open = 255;
+  } else if(strcmp(topic, SPACE_POWER_TOPIC) == 0) {
+    if(availableData) power_watts = atoi(payload);
+    else power_watts = -1;
+  } else if(strcmp(topic, DOWNSTAIRS_CO2_TOPIC) == 0) {
+    if(availableData) co2_ppm = atoi(payload);
+    else co2_ppm = -1;
+  } else if(strcmp(topic, MATRIX_TEXT_TOPIC) == 0) {
   }
 }
 
 void onMqttConnect(bool sessionPresent) {
     DEBUG_PRINT("Connected to MQTT.\n");
-    char *topic_suc;
-    char *topic_fail;
-    asprintf(&topic_suc, "%s/%s", MQTT_TOPIC, "success");
-    asprintf(&topic_fail, "%s/%s", MQTT_TOPIC, "failed");
-    mqttClient.subscribe(topic_suc, 2);
-    mqttClient.subscribe(topic_fail, 2);
+    mqttClient.subscribe(PEOPLE_COUNT_TOPIC, 1);
+    mqttClient.subscribe(SPACE_OPEN_TOPIC, 1);
+    mqttClient.subscribe(SPACE_POWER_TOPIC, 1);
+    mqttClient.subscribe(DOWNSTAIRS_CO2_TOPIC, 1);
+    mqttClient.subscribe(MATRIX_TEXT_TOPIC, 1);
     mqttClient.publish(topic_will, 1, true, "online");
     displayType = 6; 
 }

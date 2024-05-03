@@ -26,6 +26,11 @@ bool timerEnabled = false;
 
 uint8_t displayType;
 
+uint8_t space_open = 255;
+int16_t co2_ppm = -1;
+int16_t people_inside = -1;
+int16_t power_watts = -1;
+
 PxMATRIX display(WIDTH, HEIGHT, { P_LAT, P_LAT2 }, P_OE, { P_A, P_B });
 
 void IRAM_ATTR display_timer() {
@@ -116,7 +121,6 @@ void DrawFrame() {
         ShowBuffer();
     } else if ( displayType == 4) {
     } else if ( displayType == 5) {
-    } else if ( displayType == 6) {
         display.clearDisplay();
         display.setTextColor(0x41);
         display.setCursor(40, 1);
@@ -124,6 +128,35 @@ void DrawFrame() {
         display.setTextColor(0x80);
         display.setCursor(5, 16);
         display.println(millis());
+        ShowBuffer();
+    } else if ( displayType == 6) {
+        display.clearDisplay();
+        display.setTextColor(0x41);
+        display.setCursor(40, 1);
+        drawCentreString("Hacker Embassy", 96, 2);
+        // display.setTextColor(0x80);
+        // display.setCursor(2, 16);
+
+        display.setTextColor(0x80);
+
+        if(space_open != 255) {
+            if(space_open) {
+                display.setCursor(165, 1);
+                display.print("Open");
+            } else {
+                display.setCursor(160, 1);
+                display.print("Close");
+            }
+        }
+
+        display.setCursor(2, 16);
+        if(co2_ppm != -1) display.printf("CO2: %d", co2_ppm);
+
+        display.setCursor(90, 16);
+        if(people_inside != -1) display.printf("PPL: %d", people_inside);
+
+        display.setCursor(150, 16);
+        if(power_watts != -1) display.printf("%d W", power_watts);
         ShowBuffer();
     }
 

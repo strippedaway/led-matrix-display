@@ -27,8 +27,8 @@
 #define OTA_PORT 3232
 
 // MQTT
-#define MQTT_HOST "minimi.lan"
-#define MQTT_USERNAME "acs-reader"
-#define MQTT_TOPIC "acs"
+#define MQTT_HOST "hass.lan"
+#define MQTT_USERNAME "led-matrix"
+#define MQTT_TOPIC "matrix"
 
 #endif

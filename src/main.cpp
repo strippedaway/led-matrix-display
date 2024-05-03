@@ -5,6 +5,7 @@
 #include "mqtt.h"
 #include "matrix.h"
 #include "debug.h"
+// #include "ota.h"
 
 #include <FailSafe.h>
 const time_t BOOT_FLAG_TIMEOUT = 20000; // Time in ms to reset flag
@@ -27,6 +28,7 @@ void setup() {
 
   StartMatrix();
   StartWiFi();
+  // InitOTA();
 }
 
 void loop() {
