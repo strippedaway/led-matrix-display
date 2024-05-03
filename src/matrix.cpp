@@ -1,7 +1,8 @@
-#define PxMATRIX_COLOR_DEPTH   1
+#define PxMATRIX_COLOR_DEPTH   5
 #define PxMATRIX_DOUBLE_BUFFER 1
 #define PxMATRIX_OE_INVERT     1
 #define PxMATRIX_DATA_INVERT   1
+#define PxMATRIX_GAMMA_PRESET  3
 
 #include <PxMatrix.h>
 #include "config.h"
@@ -13,7 +14,6 @@ hw_timer_t * timer = NULL;
 
 
 SemaphoreHandle_t dispSem = NULL;
-SemaphoreHandle_t updateSem = NULL;
 static portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 TaskHandle_t matrix_task;
@@ -65,11 +65,9 @@ void InitMatrix() {
     EnableMatrixTimer();
 
     dispSem = xSemaphoreCreateBinary();
-    updateSem = xSemaphoreCreateBinary();
 
     DEBUG_PRINT(" OK\n");
     xSemaphoreGive(dispSem);
-    xSemaphoreGive(updateSem);
 }
 
 void StartMatrix() {
@@ -79,13 +77,7 @@ void StartMatrix() {
 }
 
 void ShowBuffer() {
-    // Block display till buffer is updated
-    if (xSemaphoreTake(updateSem, portMAX_DELAY) == pdTRUE) {
-        // DEBUG_PRINT("matrix: showing buffer\n");
-        display.showBuffer();
-        xSemaphoreGive(updateSem);
-    }
-    
+    display.showBuffer();
 }
 
 void drawCentreString(const char *buf, int x, int y)
@@ -126,9 +118,10 @@ void DrawFrame() {
     } else if ( displayType == 5) {
     } else if ( displayType == 6) {
         display.clearDisplay();
-        display.setTextColor(0xFF);
+        display.setTextColor(0x41);
         display.setCursor(40, 1);
         drawCentreString("Hacker Embassy", 96, 2);
+        display.setTextColor(0x80);
         display.setCursor(5, 16);
         display.println(millis());
         ShowBuffer();
@@ -142,12 +135,9 @@ void MatrixTask(void *pvParameters) {
     DEBUG_PRINT("MatrixTask started on core %d\n", xPortGetCoreID());
     for (;;) {
         if(xSemaphoreTake(dispSem, portMAX_DELAY) == pdTRUE) {
-            if(xSemaphoreTake(updateSem, portMAX_DELAY) == pdTRUE) {
-                portENTER_CRITICAL_ISR(&timerMux);
-                display.display(32);
-                portEXIT_CRITICAL_ISR(&timerMux);
-                xSemaphoreGive(updateSem);
-            }
+            portENTER_CRITICAL_ISR(&timerMux);
+            display.display(64);
+            portEXIT_CRITICAL_ISR(&timerMux);
         }
     }
 }

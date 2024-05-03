@@ -1,5 +1,4 @@
 #include "esp_wifi.h"
-
 #include <WiFi.h>
 #include "arduino_ota.h"
 #include "mqtt.h"

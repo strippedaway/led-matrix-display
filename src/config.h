@@ -6,6 +6,7 @@
 #define DEBUG_ENABLED
 #define DEBUG_SERIAL Serial
 
+#define FS_USE_LITTLEFS
 
 // LED Matrix
 #define P_A    22
