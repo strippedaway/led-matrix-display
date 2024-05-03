@@ -2,6 +2,7 @@
 #include "WiFi.h"
 #include "config.h"
 #include "debug.h"
+#include "matrix.h"
 
 #include <AsyncMqttClient.h>
 
@@ -46,6 +47,7 @@ void onMqttConnect(bool sessionPresent) {
     mqttClient.subscribe(topic_suc, 2);
     mqttClient.subscribe(topic_fail, 2);
     mqttClient.publish(topic_will, 1, true, "online");
+    displayType = 6; 
 }
 
 void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
@@ -56,6 +58,7 @@ void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
 }
 
 void connectToMQTT() {
+  displayType = 2;
   DEBUG_PRINT("Connecting to MQTT...\n");
   mqttClient.connect();
 }

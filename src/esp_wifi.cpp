@@ -5,10 +5,12 @@
 #include "mqtt.h"
 #include "config.h"
 #include "debug.h"
+#include "matrix.h"
 
 TimerHandle_t wifi_reconnect_timer;
 
 void ConnectToWiFi(TimerHandle_t) {
+  displayType = 1;
   DEBUG_PRINT("Connecting to WiFi...\n");
   WiFi.setHostname(OTA_HOSTNAME);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -26,7 +28,9 @@ void WiFiEvent(WiFiEvent_t event) {
       StartMQTT();
       break;
     case SYSTEM_EVENT_STA_DISCONNECTED:
+      displayType = 1;
       DEBUG_PRINT("WiFi lost connection\n");
+      displayType = 1;
       StopArduinoOTA();
       StopMQTT();
       xTimerStart(wifi_reconnect_timer, 0);

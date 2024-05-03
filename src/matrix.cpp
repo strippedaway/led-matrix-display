@@ -24,7 +24,7 @@ const uint8_t HEIGHT = 16 * 2;
 
 bool timerEnabled = false;
 
-uint32_t frame = 0;
+uint8_t displayType;
 
 PxMATRIX display(WIDTH, HEIGHT, { P_LAT, P_LAT2 }, P_OE, { P_A, P_B });
 
@@ -54,6 +54,9 @@ void InitMatrix() {
     display.showBuffer();
     display.clearDisplay();
     display.showBuffer();
+    display.setBrightness(255);
+
+    displayType = 0;
 
     // init timers 
     timer = timerBegin(3, 80, true);
@@ -85,21 +88,52 @@ void ShowBuffer() {
     
 }
 
-void DrawFrame() {
-    display.clearDisplay();
-    display.setTextColor(0xFF);
-    display.setCursor(32, 1);
-    display.println("Ha-hacker Embasissy");
-    display.setCursor(2, 16);
-    display.setTextColor(0xFF);
-    display.println(frame);
-    display.
-    ShowBuffer();
+void drawCentreString(const char *buf, int x, int y)
+{
+    int16_t x1, y1;
+    uint16_t w, h;
+    display.getTextBounds(buf, x, y, &x1, &y1, &w, &h); //calc width of new string
+    display.setCursor(x - w / 2, y);
+    display.print(buf);
+}
 
-    if(frame == UINT32_MAX) {
-        frame = 0;
+void DrawFrame() {
+    if(displayType == 0) {
+        display.clearDisplay();
+        display.setTextColor(0xFF);
+        display.setCursor(0, 1);
+        display.println("Init...");
+        ShowBuffer();
+    } else if ( displayType == 1) {
+        display.clearDisplay();
+        display.setTextColor(0xFF);
+        display.setCursor(0, 1);
+        display.println("Connecting to Wi-Fi...");
+        ShowBuffer();
+    } else if ( displayType == 2) {
+        display.clearDisplay();
+        display.setTextColor(0xFF);
+        display.setCursor(0, 1);
+        display.println("Connecting to MQTT...");
+        ShowBuffer();
+    } else if ( displayType == 3) {
+        display.clearDisplay();
+        display.setTextColor(0xFF);
+        display.setCursor(0, 1);
+        display.println("OTA...");
+        ShowBuffer();
+    } else if ( displayType == 4) {
+    } else if ( displayType == 5) {
+    } else if ( displayType == 6) {
+        display.clearDisplay();
+        display.setTextColor(0xFF);
+        display.setCursor(40, 1);
+        drawCentreString("Hacker Embassy", 96, 2);
+        display.setCursor(5, 16);
+        display.println(millis());
+        ShowBuffer();
     }
-    frame++;
+
 }
 
 void MatrixTask(void *pvParameters) {

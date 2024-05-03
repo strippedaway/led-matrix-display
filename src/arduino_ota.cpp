@@ -1,5 +1,6 @@
 #include "config.h"
 #include <ArduinoOTA.h>
+#include "matrix.h"
 
 TimerHandle_t arduino_ota_timer;
 
@@ -13,9 +14,8 @@ void InitArduinoOTA() {
   ArduinoOTA.setPassword(OTA_PASSWORD);
   ArduinoOTA.setPort(OTA_PORT);
 
-  ArduinoOTA.onStart([]() { xTimerStop(arduino_ota_timer, 0); });
-  ArduinoOTA.onError(
-      [](ota_error_t error) { xTimerStart(arduino_ota_timer, 0); });
+  ArduinoOTA.onStart([]() { xTimerStop(arduino_ota_timer, 0); displayType = 3; });
+  ArduinoOTA.onError([](ota_error_t error) { xTimerStart(arduino_ota_timer, 0); displayType = 6;  });
 
   arduino_ota_timer =
       xTimerCreate("arduino_ota_timer", pdMS_TO_TICKS(1000), pdTRUE,
