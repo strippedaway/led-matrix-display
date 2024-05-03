@@ -3,6 +3,9 @@
 
 #include "secrets.h"
 
+#define DEBUG_ENABLED
+#define DEBUG_SERIAL Serial
+
 
 // LED Matrix
 #define P_A    22
@@ -10,8 +13,8 @@
 #define P_OE   25
 #define P_LAT  32
 #define P_LAT2 33
-#define P_DATA 26
-#define P_CLK  18
+// #define P_DATA 26
+// #define P_CLK  18
 
 // WiFi
 #define WIFI_SSID "MOWMeOW"

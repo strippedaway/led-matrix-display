@@ -4,9 +4,11 @@
 #include "esp_wifi.h"
 #include "mqtt.h"
 #include "matrix.h"
+#include "debug.h"
 
 
 void setup() {
+  InitDebug();
   InitMatrix();
   InitWiFi();
   InitMQTT();

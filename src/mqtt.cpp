@@ -1,6 +1,7 @@
 #include "mqtt.h"
 #include "WiFi.h"
 #include "config.h"
+#include "debug.h"
 
 #include <AsyncMqttClient.h>
 
@@ -37,7 +38,7 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
 }
 
 void onMqttConnect(bool sessionPresent) {
-    //DEBUG_PRINT("Connected to MQTT.\n");
+    DEBUG_PRINT("Connected to MQTT.\n");
     char *topic_suc;
     char *topic_fail;
     asprintf(&topic_suc, "%s/%s", MQTT_TOPIC, "success");
@@ -48,14 +49,14 @@ void onMqttConnect(bool sessionPresent) {
 }
 
 void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
-  //DEBUG_PRINT("Disconnected from MQTT.\n");
+  DEBUG_PRINT("Disconnected from MQTT.\n");
   if (WiFi.isConnected()) {
     StartMQTT();
   }
 }
 
 void connectToMQTT() {
-  //DEBUG_PRINT("Connecting to MQTT...\n");
+  DEBUG_PRINT("Connecting to MQTT...\n");
   mqttClient.connect();
 }
 
@@ -63,16 +64,17 @@ void connectToMQTT() {
 
 void InitMQTT()
 {
-    asprintf(&topic_will, "%s/%s", MQTT_TOPIC, "lwt");
+  DEBUG_PRINT("Init MQTT\n");
+  asprintf(&topic_will, "%s/%s", MQTT_TOPIC, "lwt");
 
-    mqttReconnectTimer = xTimerCreate("mqttTimer", pdMS_TO_TICKS(2000), pdFALSE, (void*)0, reinterpret_cast<TimerCallbackFunction_t>(connectToMQTT));
-    StopMQTT();
-    mqttClient.onConnect(onMqttConnect);
-    mqttClient.onDisconnect(onMqttDisconnect);
-    mqttClient.onMessage(onMqttMessage);
-    mqttClient.setServer(MQTT_HOST, 1883);
-    mqttClient.setClientId(OTA_HOSTNAME);
-    mqttClient.setCredentials(MQTT_USERNAME, SECRET_MQTT_PASSWORD);
-    mqttClient.setWill(topic_will, 1, true, "offline");
-    mqttClient.setKeepAlive(5);
+  mqttReconnectTimer = xTimerCreate("mqttTimer", pdMS_TO_TICKS(2000), pdFALSE, (void*)0, reinterpret_cast<TimerCallbackFunction_t>(connectToMQTT));
+  StopMQTT();
+  mqttClient.onConnect(onMqttConnect);
+  mqttClient.onDisconnect(onMqttDisconnect);
+  mqttClient.onMessage(onMqttMessage);
+  mqttClient.setServer(MQTT_HOST, 1883);
+  mqttClient.setClientId(OTA_HOSTNAME);
+  mqttClient.setCredentials(MQTT_USERNAME, SECRET_MQTT_PASSWORD);
+  mqttClient.setWill(topic_will, 1, true, "offline");
+  mqttClient.setKeepAlive(5);
 }

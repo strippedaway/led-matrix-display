@@ -2,4 +2,8 @@ void InitMatrix();
 
 void StartMatrix();
 
-void MatrixTask(void*);
+void DisplayTask(void *pvParameters);
+void MatrixTask(void *pvParameters);
+
+void EnableMatrixTimer();
+void DisableMatrixTimer();

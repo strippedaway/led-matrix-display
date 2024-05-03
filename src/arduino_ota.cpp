@@ -4,7 +4,7 @@
 TimerHandle_t arduino_ota_timer;
 
 void HandleArduinoOTA(TimerHandle_t) {
-  ////DEBUG_PRINT("OTA handling\n");
+  //DEBUG_PRINT("OTA handling\n");
   ArduinoOTA.handle();
 }
 
@@ -18,7 +18,7 @@ void InitArduinoOTA() {
       [](ota_error_t error) { xTimerStart(arduino_ota_timer, 0); });
 
   arduino_ota_timer =
-      xTimerCreate("arduino_ota_timer", pdMS_TO_TICKS(3000), pdMS_TO_TICKS(500),
+      xTimerCreate("arduino_ota_timer", pdMS_TO_TICKS(1000), pdTRUE,
                    nullptr, HandleArduinoOTA);
 }
 
@@ -28,6 +28,5 @@ void StartArduinoOTA() {
 }
 
 void StopArduinoOTA() {
-  xTimerStop(arduino_ota_timer, 0);
   ArduinoOTA.end();
 }
