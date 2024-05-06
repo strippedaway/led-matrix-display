@@ -5,6 +5,11 @@
 #include "config.h"
 #include "debug.h"
 #include "matrix.h"
+#include "time.h"
+
+const char* ntpServerA = "0.am.pool.ntp.org";
+const char* ntpServerB = "1.am.pool.ntp.org";
+const long  gmtOffset_sec = 14400;
 
 TimerHandle_t wifi_reconnect_timer;
 
@@ -25,6 +30,7 @@ void WiFiEvent(WiFiEvent_t event) {
       DEBUG_PRINT("OTA server has been started\n");
       xTimerStop(wifi_reconnect_timer, 0);
       StartMQTT();
+      configTime(gmtOffset_sec, 0, ntpServerA, ntpServerB);
       break;
     case SYSTEM_EVENT_STA_DISCONNECTED:
       displayType = 1;

@@ -9,6 +9,7 @@
 #include "matrix.h"
 #include "debug.h"
 #include <Arduino.h>
+#include "time.h"
 
 hw_timer_t * timer = NULL;
 
@@ -120,6 +121,8 @@ void DrawFrame() {
         display.println("OTA...");
         ShowBuffer();
     } else if ( displayType == 4) {
+        display.clearDisplay();
+        ShowBuffer();
     } else if ( displayType == 5) {
         display.clearDisplay();
         display.setTextColor(0x41);
@@ -130,25 +133,41 @@ void DrawFrame() {
         display.println(millis());
         ShowBuffer();
     } else if ( displayType == 6) {
-        display.clearDisplay();
-        display.setTextColor(0x41);
-        display.setCursor(40, 1);
-        drawCentreString("Hacker Embassy", 96, 2);
-        // display.setTextColor(0x80);
-        // display.setCursor(2, 16);
+        
+        bool timeKnown;
+        struct tm timeinfo;
+        
+        if(!getLocalTime(&timeinfo)) timeKnown = false;
+        else timeKnown = true;
 
-        display.setTextColor(0x80);
+        display.clearDisplay();
+
 
         if(space_open != 255) {
             if(space_open) {
-                display.setCursor(165, 1);
+                display.setTextColor(0x80);
+                display.setCursor(165, 2);
                 display.print("Open");
             } else {
-                display.setCursor(160, 1);
+                display.setTextColor(0x41);
+                display.setCursor(160, 2);
                 display.print("Close");
             }
         }
 
+        display.setTextColor(0x41);
+
+        display.setCursor(40, 1);
+        drawCentreString("Hacker Embassy", 105, 2);
+        // display.setTextColor(0x80);
+        // display.setCursor(2, 16);
+
+
+        if(timeKnown) {
+            display.setCursor(3, 2);
+            display.print(&timeinfo, "%H:%M:%S");
+        }
+        
         display.setCursor(2, 16);
         if(co2_ppm != -1) display.printf("CO2: %d", co2_ppm);
 
@@ -157,6 +176,12 @@ void DrawFrame() {
 
         display.setCursor(150, 16);
         if(power_watts != -1) display.printf("%d W", power_watts);
+        ShowBuffer();
+
+
+    } else if ( displayType == 7) {
+        display.clearDisplay();
+        display.fillRect(0, 0, 192, 32, 0x81);
         ShowBuffer();
     }
 
@@ -170,6 +195,7 @@ void MatrixTask(void *pvParameters) {
         if(xSemaphoreTake(dispSem, portMAX_DELAY) == pdTRUE) {
             portENTER_CRITICAL_ISR(&timerMux);
             display.display(64);
+            if(!timerEnabled) timerAlarmDisable(timer);
             portEXIT_CRITICAL_ISR(&timerMux);
         }
     }

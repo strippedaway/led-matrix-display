@@ -14,7 +14,9 @@ AsyncMqttClient mqttClient;
 #define SPACE_OPEN_TOPIC "hass-states/binary_sensor/hackerspace_open/state"
 #define SPACE_POWER_TOPIC "hass-states/sensor/hackem_powermeter_bl0942_power/state"
 #define DOWNSTAIRS_CO2_TOPIC "hass-states/sensor/downstairs_co2_value/state"
+#define MATRIX_ENABLED_TOPIC "hass-states/input_boolean/matrix_enabled/state"
 #define MATRIX_TEXT_TOPIC "led-matrix/display-text"
+#define MATRIX_DEBUGSCREEN_TOPIC "led-matrix/debug-screen"
 
 char *topic_will;
 
@@ -46,9 +48,19 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
   } else if(strcmp(topic, SPACE_POWER_TOPIC) == 0) {
     if(availableData) power_watts = atoi(payload);
     else power_watts = -1;
+  } else if(strcmp(topic, MATRIX_DEBUGSCREEN_TOPIC) == 0) {
+    if(availableData) displayType = atoi(payload);
   } else if(strcmp(topic, DOWNSTAIRS_CO2_TOPIC) == 0) {
     if(availableData) co2_ppm = atoi(payload);
     else co2_ppm = -1;
+  }  else if(strcmp(topic, MATRIX_ENABLED_TOPIC) == 0) {
+    if(strcmp(payload, "off") == 0) {
+      displayType = 4;
+      DisableMatrixTimer();
+    } else {
+      displayType = 6;
+      EnableMatrixTimer();
+    }
   } else if(strcmp(topic, MATRIX_TEXT_TOPIC) == 0) {
   }
 }
@@ -60,8 +72,9 @@ void onMqttConnect(bool sessionPresent) {
     mqttClient.subscribe(SPACE_POWER_TOPIC, 1);
     mqttClient.subscribe(DOWNSTAIRS_CO2_TOPIC, 1);
     mqttClient.subscribe(MATRIX_TEXT_TOPIC, 1);
+    mqttClient.subscribe(MATRIX_ENABLED_TOPIC, 1);
+    mqttClient.subscribe(MATRIX_DEBUGSCREEN_TOPIC, 1);
     mqttClient.publish(topic_will, 1, true, "online");
-    displayType = 6; 
 }
 
 void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
@@ -93,5 +106,5 @@ void InitMQTT()
   mqttClient.setClientId(OTA_HOSTNAME);
   mqttClient.setCredentials(MQTT_USERNAME, SECRET_MQTT_PASSWORD);
   mqttClient.setWill(topic_will, 1, true, "offline");
-  mqttClient.setKeepAlive(5);
+  mqttClient.setKeepAlive(15);
 }
