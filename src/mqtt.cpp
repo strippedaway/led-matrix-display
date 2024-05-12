@@ -36,37 +36,55 @@ void StartMQTT() {
 
 void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) {
   bool availableData = true;
-  if(strcmp(payload, "unavailable") == 0)
+  if(strncmp(payload, "unavailable", len) == 0)
     availableData = false;
 
   if(strcmp(topic, PEOPLE_COUNT_TOPIC) == 0) {
     if(availableData) people_inside = atoi(payload);
     else people_inside = -1;
   } else if(strcmp(topic, SPACE_OPEN_TOPIC) == 0) {
-    if(availableData) space_open = (strcmp(payload, "on") == 0);
-    else space_open = 255;
+    if(availableData)
+      space_open = (strncmp(payload, "on", len) == 0) ? 1 : 0;
+    else
+      space_open = -1;
   } else if(strcmp(topic, SPACE_POWER_TOPIC) == 0) {
-    if(availableData) power_watts = atoi(payload);
-    else power_watts = -1;
+    if(availableData)
+      power_watts = int(atoff(payload));
+    else
+      power_watts = -1;
   } else if(strcmp(topic, MATRIX_DEBUGSCREEN_TOPIC) == 0) {
-    if(availableData) displayType = atoi(payload);
+    if(availableData)
+      displayType = int(atoff(payload));
   } else if(strcmp(topic, DOWNSTAIRS_CO2_TOPIC) == 0) {
-    if(availableData) co2_ppm = atoi(payload);
-    else co2_ppm = -1;
-  }  else if(strcmp(topic, MATRIX_ENABLED_TOPIC) == 0) {
-    if(strcmp(payload, "off") == 0) {
-      displayType = 4;
+    if(availableData)
+      co2_ppm = int(atoff(payload));
+    else
+      co2_ppm = -1;
+  } else if(strcmp(topic, MATRIX_ENABLED_TOPIC) == 0) {
+    if(strncmp(payload, "off", len) == 0) {
+      // displayType = 4;
       DisableMatrixTimer();
     } else {
-      displayType = 6;
+      // displayType = 6;
       EnableMatrixTimer();
     }
   } else if(strcmp(topic, MATRIX_TEXT_TOPIC) == 0) {
+    //textMsg[0] = '\0';
+    if(len < 1023) {
+      memset(textMsg, 0, strlen(textMsg));
+      strncpy(textMsg, payload, len);
+      ResetTextScroll();
+      if(displayType != 9) {
+        oldDisplayType = displayType;
+        displayType = 10;
+      }
+    }
   }
 }
 
 void onMqttConnect(bool sessionPresent) {
     DEBUG_PRINT("Connected to MQTT.\n");
+    displayType = 6;
     mqttClient.subscribe(PEOPLE_COUNT_TOPIC, 1);
     mqttClient.subscribe(SPACE_OPEN_TOPIC, 1);
     mqttClient.subscribe(SPACE_POWER_TOPIC, 1);

@@ -10,32 +10,45 @@
 #include "debug.h"
 #include <Arduino.h>
 #include "time.h"
+#include "fonts/CourierCyr10.h"
+#include "fonts/FreeSansBold10.h"
 
 hw_timer_t * timer = NULL;
 
 
 SemaphoreHandle_t dispSem = NULL;
+SemaphoreHandle_t vSyncSem = NULL;
+
 static portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 TaskHandle_t matrix_task;
 TaskHandle_t display_task;
 
+char textMsg[1024] = {0};
+
 const uint8_t WIDTH = 32 * 6;
 const uint8_t HEIGHT = 16 * 2;
 
+int16_t xScrollPos = 0;
+
 bool timerEnabled = false;
 
-uint8_t displayType;
+int16_t displayType;
+int16_t oldDisplayType;
 
-uint8_t space_open = 255;
-int16_t co2_ppm = -1;
-int16_t people_inside = -1;
-int16_t power_watts = -1;
+int16_t space_open;
+int16_t co2_ppm;
+int16_t people_inside;
+int16_t power_watts;
 
 PxMATRIX display(WIDTH, HEIGHT, { P_LAT, P_LAT2 }, P_OE, { P_A, P_B });
 
 void IRAM_ATTR display_timer() {
     xSemaphoreGiveFromISR(dispSem, NULL);
+}
+
+void ResetTextScroll() {
+    xScrollPos = WIDTH+2;
 }
 
 void DisableMatrixTimer() {
@@ -63,6 +76,10 @@ void InitMatrix() {
     display.setBrightness(255);
 
     displayType = 0;
+    space_open = -1;
+    co2_ppm = -1;
+    people_inside = -1;
+    power_watts = -1;
 
     // init timers 
     timer = timerBegin(3, 80, true);
@@ -71,9 +88,11 @@ void InitMatrix() {
     EnableMatrixTimer();
 
     dispSem = xSemaphoreCreateBinary();
+    vSyncSem = xSemaphoreCreateBinary();
 
     DEBUG_PRINT(" OK\n");
     xSemaphoreGive(dispSem);
+    xSemaphoreGive(vSyncSem);
 }
 
 void StartMatrix() {
@@ -83,7 +102,9 @@ void StartMatrix() {
 }
 
 void ShowBuffer() {
+    // xSemaphoreTake(vSyncSem, pdMS_TO_TICKS(10));
     display.showBuffer();
+    // xSemaphoreGive(vSyncSem);
 }
 
 void drawCentreString(const char *buf, int x, int y)
@@ -95,36 +116,77 @@ void drawCentreString(const char *buf, int x, int y)
     display.print(buf);
 }
 
+void ScrollText() {
+    display.setTextColor(0x41);
+    display.setTextWrap(false);
+    display.setFont(&FreeSansBold10pt8b);
+    
+    int16_t x1, y1;
+    uint16_t w, h;
+
+    display.getTextBounds(textMsg, 0, 20, &x1, &y1, &w, &h); //calc width of string
+
+    const int16_t startX = WIDTH+1;
+    const int16_t endX = (-15 - w);
+
+    display.setCursor(0, 32);
+    display.print(startX);
+    display.print(" ");
+    display.print(endX);
+
+    ShowBuffer();
+    
+    if(w > 1) {
+        for(xScrollPos = startX; xScrollPos > endX; xScrollPos--) {
+            if(xScrollPos > (startX + 1)) break;
+
+            // display.setFont(&FreeSansBold10pt8b);
+            display.setCursor(xScrollPos, 22);
+            display.print(textMsg);
+
+            // display.setFont();
+            // display.setCursor(0, 25);
+            // display.print(xScrollPos);
+            ShowBuffer();
+            vTaskDelay(pdMS_TO_TICKS(25));
+            display.clearDisplay();
+        }
+    }
+    display.setFont();
+}
+
 void DrawFrame() {
+
+        
+    bool timeKnown;
+    struct tm timeinfo;
+    
+    if(!getLocalTime(&timeinfo)) timeKnown = false;
+    else timeKnown = true;
+
+    display.clearDisplay();
+    display.setTextColor(0xFF);
+    display.setTextSize(1);
+
     if(displayType == 0) {
-        display.clearDisplay();
-        display.setTextColor(0xFF);
         display.setCursor(0, 1);
         display.println("Init...");
         ShowBuffer();
     } else if ( displayType == 1) {
-        display.clearDisplay();
-        display.setTextColor(0xFF);
         display.setCursor(0, 1);
         display.println("Connecting to Wi-Fi...");
         ShowBuffer();
     } else if ( displayType == 2) {
-        display.clearDisplay();
-        display.setTextColor(0xFF);
         display.setCursor(0, 1);
         display.println("Connecting to MQTT...");
         ShowBuffer();
     } else if ( displayType == 3) {
-        display.clearDisplay();
-        display.setTextColor(0xFF);
         display.setCursor(0, 1);
         display.println("OTA...");
         ShowBuffer();
     } else if ( displayType == 4) {
-        display.clearDisplay();
         ShowBuffer();
     } else if ( displayType == 5) {
-        display.clearDisplay();
         display.setTextColor(0x41);
         display.setCursor(40, 1);
         drawCentreString("Hacker Embassy", 96, 2);
@@ -133,25 +195,16 @@ void DrawFrame() {
         display.println(millis());
         ShowBuffer();
     } else if ( displayType == 6) {
-        
-        bool timeKnown;
-        struct tm timeinfo;
-        
-        if(!getLocalTime(&timeinfo)) timeKnown = false;
-        else timeKnown = true;
 
-        display.clearDisplay();
-
-
-        if(space_open != 255) {
-            if(space_open) {
+        if(space_open != -1) {
+            if(space_open == 1) {
                 display.setTextColor(0x80);
                 display.setCursor(165, 2);
                 display.print("Open");
-            } else {
+            } else if(space_open == 0) {
                 display.setTextColor(0x41);
-                display.setCursor(160, 2);
-                display.print("Close");
+                display.setCursor(155, 2);
+                display.print("Closed");
             }
         }
 
@@ -180,9 +233,25 @@ void DrawFrame() {
 
 
     } else if ( displayType == 7) {
-        display.clearDisplay();
         display.fillRect(0, 0, 192, 32, 0x81);
         ShowBuffer();
+    } else if ( displayType == 8) {
+        display.setTextColor(0x41);
+        if(timeKnown) {
+            display.setTextSize(3);
+            display.setCursor(25, 5);
+            display.print(&timeinfo, "%H:%M:%S");
+        } else {
+            display.setTextSize(2);
+            display.setCursor(20, 14);
+            display.print("time not set");
+        }
+        ShowBuffer();
+    } else if ( displayType == 9) { // scrolltest
+        ScrollText();
+    } else if ( displayType == 10) { // scrolltest
+        ScrollText();
+        displayType = oldDisplayType;
     }
 
 }
@@ -194,7 +263,11 @@ void MatrixTask(void *pvParameters) {
     for (;;) {
         if(xSemaphoreTake(dispSem, portMAX_DELAY) == pdTRUE) {
             portENTER_CRITICAL_ISR(&timerMux);
+            // while(xSemaphoreTake(vSyncSem, 0) != pdTRUE) {
+                // vTaskDelay(2);
+            // }
             display.display(64);
+            // xSemaphoreGive(vSyncSem);
             if(!timerEnabled) timerAlarmDisable(timer);
             portEXIT_CRITICAL_ISR(&timerMux);
         }

@@ -34,5 +34,9 @@ void setup() {
 void loop() {
     FailSafe.loop (BOOT_FLAG_TIMEOUT); // Use always this line
 
-    delay(10000);
+    if(FailSafe.isActive()) {
+        delay(20);
+    } else {
+        delay(3000);
+    }
 }
