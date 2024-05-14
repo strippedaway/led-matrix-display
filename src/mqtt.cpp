@@ -40,8 +40,10 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
     availableData = false;
 
   if(strcmp(topic, PEOPLE_COUNT_TOPIC) == 0) {
-    if(availableData) people_inside = atoi(payload);
-    else people_inside = -1;
+    if(availableData) 
+      people_inside = int(atof(payload));
+    else
+      people_inside = -1;
   } else if(strcmp(topic, SPACE_OPEN_TOPIC) == 0) {
     if(availableData)
       space_open = (strncmp(payload, "on", len) == 0) ? 1 : 0;
@@ -49,15 +51,17 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
       space_open = -1;
   } else if(strcmp(topic, SPACE_POWER_TOPIC) == 0) {
     if(availableData)
-      power_watts = int(atoff(payload));
+      power_watts = int(atof(payload));
     else
       power_watts = -1;
   } else if(strcmp(topic, MATRIX_DEBUGSCREEN_TOPIC) == 0) {
     if(availableData)
-      displayType = int(atoff(payload));
+      displayType = int(atof(payload));
+
+    if(displayType == -69) ESP.restart();
   } else if(strcmp(topic, DOWNSTAIRS_CO2_TOPIC) == 0) {
     if(availableData)
-      co2_ppm = int(atoff(payload));
+      co2_ppm = int(atof(payload));
     else
       co2_ppm = -1;
   } else if(strcmp(topic, MATRIX_ENABLED_TOPIC) == 0) {
@@ -74,7 +78,7 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
       memset(textMsg, 0, strlen(textMsg));
       strncpy(textMsg, payload, len);
       ResetTextScroll();
-      if(displayType != 9) {
+      if(displayType != 9 && displayType != 10) {
         oldDisplayType = displayType;
         displayType = 10;
       }

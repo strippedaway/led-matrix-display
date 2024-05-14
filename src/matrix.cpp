@@ -24,7 +24,7 @@ static portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 TaskHandle_t matrix_task;
 TaskHandle_t display_task;
 
-char textMsg[1024] = {0};
+char textMsg[2048] = {0};
 
 const uint8_t WIDTH = 32 * 6;
 const uint8_t HEIGHT = 16 * 2;
@@ -32,6 +32,7 @@ const uint8_t HEIGHT = 16 * 2;
 int16_t xScrollPos = 0;
 
 bool timerEnabled = false;
+bool stopScroll = true;
 
 int16_t displayType;
 int16_t oldDisplayType;
@@ -49,6 +50,7 @@ void IRAM_ATTR display_timer() {
 
 void ResetTextScroll() {
     xScrollPos = WIDTH+2;
+    stopScroll = true;
 }
 
 void DisableMatrixTimer() {
@@ -129,16 +131,17 @@ void ScrollText() {
     const int16_t startX = WIDTH+1;
     const int16_t endX = (-15 - w);
 
-    display.setCursor(0, 32);
-    display.print(startX);
-    display.print(" ");
-    display.print(endX);
+    // display.setCursor(0, 32);
+    // display.print(startX);
+    // display.print(" ");
+    // display.print(endX);
+    // ShowBuffer();
 
-    ShowBuffer();
+    stopScroll = false;
     
     if(w > 1) {
         for(xScrollPos = startX; xScrollPos > endX; xScrollPos--) {
-            if(xScrollPos > (startX + 1)) break;
+            if(stopScroll) break;
 
             // display.setFont(&FreeSansBold10pt8b);
             display.setCursor(xScrollPos, 22);
@@ -148,7 +151,7 @@ void ScrollText() {
             // display.setCursor(0, 25);
             // display.print(xScrollPos);
             ShowBuffer();
-            vTaskDelay(pdMS_TO_TICKS(25));
+            vTaskDelay(pdMS_TO_TICKS(20));
             display.clearDisplay();
         }
     }

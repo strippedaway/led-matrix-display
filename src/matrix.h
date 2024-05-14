@@ -16,4 +16,4 @@ extern int16_t oldDisplayType;
 extern int16_t co2_ppm;
 extern int16_t people_inside;
 extern int16_t power_watts;
-extern char textMsg[1024];
+extern char textMsg[2048];
