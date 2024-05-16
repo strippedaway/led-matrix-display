@@ -12,6 +12,7 @@
 #include "time.h"
 #include "fonts/CourierCyr10.h"
 #include "fonts/FreeSansBold10.h"
+#include "arduino_ota.h"
 
 hw_timer_t * timer = NULL;
 
@@ -138,14 +139,19 @@ void ScrollText() {
     // ShowBuffer();
 
     stopScroll = false;
+    int xScrollShift = endX - startX + 15;
+    float a;
     
     if(w > 1) {
         for(xScrollPos = startX; xScrollPos > endX; xScrollPos--) {
             if(stopScroll) break;
 
+            a = 1-float(xScrollPos-startX)/xScrollShift;
+
             // display.setFont(&FreeSansBold10pt8b);
             display.setCursor(xScrollPos, 22);
             display.print(textMsg);
+            display.fillRect(0, 30, a * WIDTH, 2, 0x81);
 
             // display.setFont();
             // display.setCursor(0, 25);
@@ -176,17 +182,39 @@ void DrawFrame() {
         display.println("Init...");
         ShowBuffer();
     } else if ( displayType == 1) {
-        display.setCursor(0, 1);
-        display.println("Connecting to Wi-Fi...");
-        ShowBuffer();
+        for(int i = 0; i <= 3; i++) {
+            display.setCursor(0, 1);
+            display.print("Connecting to Wi-Fi");
+            for(int a = 0; a < i; a++) display.print(".");
+            ShowBuffer();
+            display.clearDisplay();
+            vTaskDelay(pdMS_TO_TICKS(300));
+        }
+        vTaskDelay(pdMS_TO_TICKS(300));
     } else if ( displayType == 2) {
-        display.setCursor(0, 1);
-        display.println("Connecting to MQTT...");
-        ShowBuffer();
+        for(int i = 0; i <= 3; i++) {
+            display.setCursor(0, 1);
+            display.print("Connecting to MQTT");
+            for(int a = 0; a < i; a++) display.print(".");
+            ShowBuffer();
+            display.clearDisplay();
+            vTaskDelay(pdMS_TO_TICKS(300));
+        }
+        vTaskDelay(pdMS_TO_TICKS(300));
     } else if ( displayType == 3) {
-        display.setCursor(0, 1);
-        display.println("OTA...");
-        ShowBuffer();
+        for(int i = 0; i <= 3; i++) {
+            display.setCursor(0, 1);
+            display.print("OTA");
+            for(int a = 0; a < i; a++) display.print(".");
+            if(otaProgress < 200) {
+                display.drawRect(0, 16, WIDTH, 5, 0x41);
+                display.fillRect(1, 17, int((float(WIDTH-1)/100)*otaProgress), 3, 0x81);
+            }
+            ShowBuffer();
+            display.clearDisplay();
+            vTaskDelay(pdMS_TO_TICKS(300));
+        }
+        vTaskDelay(pdMS_TO_TICKS(300));
     } else if ( displayType == 4) {
         ShowBuffer();
     } else if ( displayType == 5) {
@@ -227,8 +255,8 @@ void DrawFrame() {
         display.setCursor(2, 16);
         if(co2_ppm != -1) display.printf("CO2: %d", co2_ppm);
 
-        display.setCursor(90, 16);
-        if(people_inside != -1) display.printf("PPL: %d", people_inside);
+        display.setCursor(76, 16);
+        if(people_inside != -1) display.printf("Inside: %d", people_inside);
 
         display.setCursor(150, 16);
         if(power_watts != -1) display.printf("%d W", power_watts);

@@ -3,18 +3,13 @@
 #include "arduino_ota.h"
 #include "matrix.h"
 
-TimerHandle_t arduino_ota_timer;
 TaskHandle_t arduino_ota_task;
 
-void HandleArduinoOTA(TimerHandle_t) {
-  //DEBUG_PRINT("OTA handling\n");
-  ArduinoOTA.handle();
-}
-
-
+bool otaEnabled = false;
+uint8_t otaProgress = 255;
 
 void InitArduinoOTA() {
-  xTaskCreatePinnedToCore(ArduinoOTATask, "arduino_ota_task", 10000, nullptr, 5, &arduino_ota_task, 0);
+  xTaskCreatePinnedToCore(ArduinoOTATask, "arduino_ota_task", 10000, nullptr, 12, &arduino_ota_task, 0);
 }
 
 void ArduinoOTATask(void * pvParameters) {
@@ -22,23 +17,25 @@ void ArduinoOTATask(void * pvParameters) {
   ArduinoOTA.setPassword(OTA_PASSWORD);
   ArduinoOTA.setPort(OTA_PORT);
 
-  ArduinoOTA.onStart([]() { xTimerStop(arduino_ota_timer, 0); DisableMatrixTimer(); });
-  ArduinoOTA.onError([](ota_error_t error) { xTimerStart(arduino_ota_timer, 0); EnableMatrixTimer();  });
+  ArduinoOTA.onStart([]() { displayType = 3; otaProgress = 255; });
+  ArduinoOTA.onError([](ota_error_t error) { displayType = 6; otaProgress = 255; });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    otaProgress = progress / (total / 100);
+  });
 
-  arduino_ota_timer =
-      xTimerCreate("arduino_ota_timer", pdMS_TO_TICKS(1000), pdTRUE,
-                   nullptr, HandleArduinoOTA);
 
   for(;;) {
-    vTaskDelay(pdMS_TO_TICKS(10000));
+    if(otaEnabled) ArduinoOTA.handle();
+    vTaskDelay(pdMS_TO_TICKS(250));
   }
 }
 
 void StartArduinoOTA() {
   ArduinoOTA.begin();
-  xTimerStart(arduino_ota_timer, 0);
+  otaEnabled = true;
 }
 
 void StopArduinoOTA() {
   ArduinoOTA.end();
+  otaEnabled = false;
 }
