@@ -11,6 +11,7 @@ void DisableMatrixTimer();
 void ResetTextScroll();
 
 extern int16_t space_open;
+extern int16_t wc_occupied;
 extern int16_t displayType;
 extern int16_t oldDisplayType;
 extern int16_t co2_ppm;

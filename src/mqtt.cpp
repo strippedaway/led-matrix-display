@@ -18,6 +18,7 @@ AsyncMqttClient mqttClient;
 #define SPACE_OPEN_TOPIC "hass-states/binary_sensor/hackerspace_open/state"
 #define SPACE_POWER_TOPIC "hass-states/sensor/hackem_powermeter_bl0942_power/state"
 #define DOWNSTAIRS_CO2_TOPIC "hass-states/sensor/downstairs_co2_value/state"
+#define WC_OCCUPIED_TOPIC "hass-states/binary_sensor/toilet_door_lock/state"
 #define MATRIX_ENABLED_TOPIC "hass-states/input_boolean/matrix_enabled/state"
 #define MATRIX_TEXT_TOPIC "led-matrix/display-text"
 #define MATRIX_DEBUGSCREEN_TOPIC "led-matrix/debug-screen"
@@ -56,6 +57,11 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
       space_open = (strncmp(payload, "on", len) == 0) ? 1 : 0;
     else
       space_open = -1;
+  } else if(strcmp(topic, WC_OCCUPIED_TOPIC) == 0) {
+    if(availableData)
+      wc_occupied = (strncmp(payload, "on", len) == 0) ? 0 : 1;
+    else
+      wc_occupied = -1;
   } else if(strcmp(topic, SPACE_POWER_TOPIC) == 0) {
     power_watts = numPayload;
   } else if(strcmp(topic, MATRIX_DEBUGSCREEN_TOPIC) == 0) {
@@ -90,6 +96,7 @@ void onMqttConnect(bool sessionPresent) {
     mqttClient.subscribe(SPACE_OPEN_TOPIC, 1);
     mqttClient.subscribe(SPACE_POWER_TOPIC, 1);
     mqttClient.subscribe(DOWNSTAIRS_CO2_TOPIC, 1);
+    mqttClient.subscribe(WC_OCCUPIED_TOPIC, 1);
     mqttClient.subscribe(MATRIX_TEXT_TOPIC, 1);
     mqttClient.subscribe(MATRIX_ENABLED_TOPIC, 1);
     mqttClient.subscribe(MATRIX_DEBUGSCREEN_TOPIC, 1);

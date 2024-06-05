@@ -38,10 +38,14 @@ bool stopScroll = true;
 int16_t displayType;
 int16_t oldDisplayType;
 
+int16_t wc_occupied;
 int16_t space_open;
 int16_t co2_ppm;
 int16_t people_inside;
 int16_t power_watts;
+
+uint32_t latestBlink;
+bool blinkState = false;
 
 PxMATRIX display(WIDTH, HEIGHT, { P_LAT, P_LAT2 }, P_OE, { P_A, P_B });
 
@@ -77,6 +81,8 @@ void InitMatrix() {
     display.clearDisplay();
     display.showBuffer();
     display.setBrightness(255);
+
+    latestBlink = millis();
 
     displayType = 0;
     space_open = -1;
@@ -117,6 +123,14 @@ void drawCentreString(const char *buf, int x, int y)
     display.getTextBounds(buf, x, y, &x1, &y1, &w, &h); //calc width of new string
     display.setCursor(x - w / 2, y);
     display.print(buf);
+}
+
+void blinkColor(uint32_t delayBlink) {
+    if(millis() - latestBlink > delayBlink) {
+        blinkState = ! blinkState;
+        latestBlink = millis();
+    }
+    display.setTextColor(blinkState ? 0x41 : 0x80);
 }
 
 void ScrollText() {
@@ -227,25 +241,35 @@ void DrawFrame() {
         ShowBuffer();
     } else if ( displayType == 6) {
 
+        display.setTextColor(0x41);
+
         if(space_open != -1) {
             if(space_open == 1) {
                 display.setTextColor(0x80);
                 display.setCursor(165, 2);
                 display.print("Open");
-            } else if(space_open == 0) {
                 display.setTextColor(0x41);
+            } else if(space_open == 0) {
                 display.setCursor(155, 2);
                 display.print("Closed");
             }
         }
 
-        display.setTextColor(0x41);
 
-        display.setCursor(40, 1);
-        drawCentreString("Hacker Embassy", 105, 2);
-        // display.setTextColor(0x80);
-        // display.setCursor(2, 16);
-
+        if(wc_occupied == 1) {
+            blinkColor(1000);
+            display.setCursor(70, 2);
+            display.print("WC occupied");
+            display.setTextColor(0x41);
+        } else if(wc_occupied == 0) {
+            display.setCursor(62, 2);
+            display.print("Hacker Embassy");
+        } else if(wc_occupied == -1) {
+            blinkColor(500);
+            display.setCursor(70, 2);
+            display.print("WC offline");
+            display.setTextColor(0x41);
+        }
 
         if(timeKnown) {
             display.setCursor(3, 2);
@@ -253,7 +277,9 @@ void DrawFrame() {
         }
         
         display.setCursor(2, 16);
+        if(co2_ppm > 1500) blinkColor(500); 
         if(co2_ppm != -1) display.printf("CO2: %d", co2_ppm);
+        display.setTextColor(0x41);
 
         display.setCursor(76, 16);
         if(people_inside != -1) display.printf("Inside: %d", people_inside);
