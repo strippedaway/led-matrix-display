@@ -6,6 +6,7 @@
 #include "debug.h"
 #include "matrix.h"
 #include "time.h"
+#include "net_frames.h"
 
 const char* ntpServerA = "0.am.pool.ntp.org";
 const char* ntpServerB = "1.am.pool.ntp.org";
@@ -32,7 +33,6 @@ void WiFiEvent(WiFiEvent_t event) {
       configTime(gmtOffset_sec, 0, ntpServerA, ntpServerB);
       break;
     case SYSTEM_EVENT_STA_DISCONNECTED:
-      displayType = 1;
       DEBUG_PRINT("WiFi lost connection\n");
       displayType = 1;
       StopArduinoOTA();

@@ -65,7 +65,12 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
   } else if(strcmp(topic, SPACE_POWER_TOPIC) == 0) {
     power_watts = numPayload;
   } else if(strcmp(topic, MATRIX_DEBUGSCREEN_TOPIC) == 0) {
-    displayType = numPayload;
+    if(numPayload == 20) {
+      displayTcp = true;
+    } else {
+      displayTcp = false;
+      displayType = numPayload;
+    }
     if(numPayload == -69) ESP.restart();
   } else if(strcmp(topic, DOWNSTAIRS_CO2_TOPIC) == 0) {
     co2_ppm = numPayload;
@@ -115,7 +120,6 @@ void connectToMQTT() {
   DEBUG_PRINT("Connecting to MQTT...\n");
   mqttClient.connect();
 }
-
 
 
 void InitMQTT()

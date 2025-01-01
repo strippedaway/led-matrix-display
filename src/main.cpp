@@ -5,6 +5,7 @@
 #include "mqtt.h"
 #include "matrix.h"
 #include "debug.h"
+#include "net_frames.h"
 // #include "ota.h"
 
 #include <FailSafe.h>
@@ -25,7 +26,7 @@ void setup() {
   InitWiFi();
   InitMQTT();
   InitArduinoOTA();
-
+  InitTCP();
   StartMatrix();
   StartWiFi();
   // InitOTA();
