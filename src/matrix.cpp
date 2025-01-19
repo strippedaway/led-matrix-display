@@ -70,7 +70,7 @@ void drawBitmapBuffer() {
 }
 
 void EnableMatrixTimer() {
-    timerAlarmEnable(timer);
+    timerRestart(timer);
     timerEnabled = true;
 }
 
@@ -98,9 +98,9 @@ void InitMatrix() {
     power_watts = -1;
 
     // init timers 
-    timer = timerBegin(3, 80, true);
-    timerAttachInterrupt(timer, &display_timer, true);
-    timerAlarmWrite(timer, 1000, true); // 1 ms
+    timer = timerBegin(1000000);
+    timerAttachInterrupt(timer, &display_timer);
+    timerAlarm(timer, 1000, true, 0); // 1 ms
     EnableMatrixTimer();
 
     dispSem = xSemaphoreCreateBinary();
@@ -321,13 +321,14 @@ void DrawFrame() {
             ScrollText();
             displayType = oldDisplayType;
         }
-    } else if (!timerEnabled && timerAlarmEnabled(timer)) {
+    } else if (!timerEnabled && timerRead(timer) != 0) {
         display.clearDisplay();
         ShowBuffer();
         display.clearDisplay();
         ShowBuffer();
         vTaskDelay(pdMS_TO_TICKS(300));
-        timerAlarmDisable(timer);
+        timerStop(timer);
+        timerWrite(timer, 0);
     }
 }
 
