@@ -8,7 +8,7 @@ import numpy as np
 # ------------------------------
 # Configuration
 # ------------------------------
-SERVER_IP = "192.168.14.187"
+SERVER_IP = "led-matrix.lan"
 SERVER_PORT = 1234
 
 LOOP_VIDEO = True  # Set to True to loop; only makes sense for video files

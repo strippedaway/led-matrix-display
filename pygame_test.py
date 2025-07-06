@@ -95,8 +95,8 @@ async def run_pygame(queue):
     # Example: animate a white rectangle
     rect_x = 0
     rect_y = 8
-    rect_width = 32
-    rect_height = 32
+    rect_width = 16
+    rect_height = 16
     speed = 1
 
     font = pygame.font.Font(None, 48)  # Adjust size for super-resolution
@@ -120,8 +120,8 @@ async def run_pygame(queue):
         # --- Draw ---
         super_surface.fill((0, 0, 0))
         
-        time_surface = font.render(current_time, True, (128, 128, 128))
-        super_surface.blit(time_surface, (50, 10))  # Position at (50, 10)
+        time_surface = font.render(current_time, True, (255, 255, 255))
+        super_surface.blit(time_surface, (25, 4))  # Position at (50, 10)
 
         pygame.draw.rect(super_surface, (32, 0, 0),
                          (rect_x, rect_y, rect_width, rect_height))

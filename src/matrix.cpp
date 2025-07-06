@@ -70,7 +70,7 @@ void drawBitmapBuffer() {
 }
 
 void EnableMatrixTimer() {
-    timerRestart(timer);
+    timerStart(timer);
     timerEnabled = true;
 }
 
@@ -236,6 +236,16 @@ void DrawFrame() {
                 vTaskDelay(pdMS_TO_TICKS(300));
             }
             vTaskDelay(pdMS_TO_TICKS(300));
+        } else if ( displayType == 33) {
+            for(int i = 0; i <= 3; i++) {
+                display.setCursor(0, 1);
+                display.println("HASS unavailable :(");
+                for(int a = 0; a < i; a++) display.print(".");
+                ShowBuffer();
+                display.clearDisplay();
+                vTaskDelay(pdMS_TO_TICKS(300));
+            }
+            vTaskDelay(pdMS_TO_TICKS(300));
         } else if ( displayType == 4) {
             ShowBuffer();
         } else if ( displayType == 5) {
@@ -266,7 +276,7 @@ void DrawFrame() {
             if(wc_occupied == 1) {
                 blinkColor(1000);
                 display.setCursor(70, 2);
-                display.print("WC occupied");
+                display.print("WC2 occupied");
                 display.setTextColor(0x41);
             } else if(wc_occupied == 0) {
                 display.setCursor(62, 2);
@@ -274,7 +284,7 @@ void DrawFrame() {
             } else if(wc_occupied == -1) {
                 blinkColor(500);
                 display.setCursor(70, 2);
-                display.print("WC offline");
+                display.print("WC2 offline");
                 display.setTextColor(0x41);
             }
 

@@ -2,6 +2,8 @@
 #include <ArduinoOTA.h>
 #include "arduino_ota.h"
 #include "matrix.h"
+#include "mqtt.h"
+#include "mqtt.h"
 
 TaskHandle_t arduino_ota_task;
 
@@ -17,8 +19,8 @@ void ArduinoOTATask(void * pvParameters) {
   ArduinoOTA.setPassword(OTA_PASSWORD);
   ArduinoOTA.setPort(OTA_PORT);
 
-  ArduinoOTA.onStart([]() { displayType = 3; otaProgress = 255; });
-  ArduinoOTA.onError([](ota_error_t error) { displayType = 6; otaProgress = 255; });
+  ArduinoOTA.onStart([]() { displayType = 3; StopMQTT(); otaProgress = 255; });
+  ArduinoOTA.onError([](ota_error_t error) { displayType = 6; StartMQTT(); otaProgress = 255; });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     otaProgress = progress / (total / 100);
   });
@@ -26,7 +28,7 @@ void ArduinoOTATask(void * pvParameters) {
 
   for(;;) {
     if(otaEnabled) ArduinoOTA.handle();
-    vTaskDelay(pdMS_TO_TICKS(250));
+    vTaskDelay(pdMS_TO_TICKS(50));
   }
 }
 

@@ -7,7 +7,7 @@ from PIL import Image
 # -----------------------------------------------------------
 # Configuration
 # -----------------------------------------------------------
-SERVER_IP   = "192.168.14.187"  # ESP32 IP address
+SERVER_IP   = "led-matrix.lan"  # ESP32 IP address
 SERVER_PORT = 1234             # Same port as ESP32 code
 LOOP_GIF    = True
 
