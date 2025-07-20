@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #ifndef MCU_CONFIG_H_
 #define MCU_CONFIG_H_
 
@@ -8,7 +9,11 @@
 
 #define FS_USE_LITTLEFS
 
-// LED Matrix
+// LED Matrix params
+const uint8_t WIDTH = 32 * 6;
+const uint8_t HEIGHT = 16 * 2;
+
+// LED Matrix pinout
 #define P_A    22
 #define P_B    21
 #define P_OE   25
@@ -22,13 +27,13 @@
 #define WIFI_PASSWORD SECRET_WIFI_PASSWORD
 
 // WiFi
-#define OTA_HOSTNAME "led-matrix"
+#define OTA_HOSTNAME "led-matrix-red"
 #define OTA_PASSWORD SECRET_OTA_PASSWORD
 #define OTA_PORT 3232
 
 // MQTT
 #define MQTT_HOST "hass.lan"
-#define MQTT_USERNAME "led-matrix"
+#define MQTT_USERNAME "led-matrix-red"
 #define MQTT_TOPIC "matrix"
 
 #endif
