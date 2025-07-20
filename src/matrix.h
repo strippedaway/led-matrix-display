@@ -16,9 +16,6 @@ void ResetTextScroll();
 
 extern bool displayTcp;
 
-const uint8_t WIDTH = 32 * 6;
-const uint8_t HEIGHT = 16 * 2;
-
 extern int16_t space_open;
 extern int16_t wc_occupied;
 extern int16_t displayType;
