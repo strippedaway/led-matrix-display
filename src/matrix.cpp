@@ -251,7 +251,7 @@ void DrawFrame() {
         } else if ( displayType == 5) {
             display.setTextColor(0x41);
             display.setCursor(40, 1);
-            drawCentreString("Hacker Embassy", 96, 2);
+            drawCentreString("Hacker Embassy", 96, LINE1_Y);
             display.setTextColor(0x80);
             display.setCursor(5, 16);
             display.println(millis());
@@ -260,49 +260,103 @@ void DrawFrame() {
 
             display.setTextColor(0x41);
 
+            // title 
+
+            display.setCursor(62, LINE1_Y);
+            display.print("Hacker Embassy");
+            
+            //space status O/C
+            
             if(space_open != -1) {
                 if(space_open == 1) {
                     display.setTextColor(0x80);
-                    display.setCursor(165, 2);
+                    display.setCursor(160, LINE1_Y);
                     display.print("Open");
                     display.setTextColor(0x41);
                 } else if(space_open == 0) {
-                    display.setCursor(155, 2);
+                    display.setCursor(150, LINE1_Y);
                     display.print("Closed");
                 }
             }
+            // toilet occupation logic (no military operation pls)
+            //upstairs toilet
+            if(wc_occupied == 1) {
+                blinkColor(1000);
+                display.setCursor(224, LINE1_Y);
+                display.print("WC^:X");
+                display.setTextColor(0x41);
+            } else if(wc_occupied == 0) {
+                display.setCursor(224, LINE1_Y);
+                display.print("WC^:o");
 
+            } else if(wc_occupied == -1) {
+                blinkColor(500);
+                display.setCursor(224, LINE1_Y);
+                display.print("WC^:?");
+                display.setTextColor(0x41);
+            }
+
+            //wc_downstairs (replace extern variable name when ready)
 
             if(wc_occupied == 1) {
                 blinkColor(1000);
-                display.setCursor(70, 2);
-                display.print("WC2 occupied");
+                display.setCursor(224, LINE2_Y);
+                display.print("WC_:X");
                 display.setTextColor(0x41);
             } else if(wc_occupied == 0) {
-                display.setCursor(62, 2);
-                display.print("Hacker Embassy");
+                display.setCursor(224, LINE2_Y);
+                display.print("WC_:o");
+
             } else if(wc_occupied == -1) {
                 blinkColor(500);
-                display.setCursor(70, 2);
-                display.print("WC2 offline");
+                display.setCursor(224, LINE2_Y);
+                display.print("WC_:?");
                 display.setTextColor(0x41);
             }
 
+            //time
+
             if(timeKnown) {
-                display.setCursor(3, 2);
+                display.setCursor(3, LINE1_Y);
                 display.print(&timeinfo, "%H:%M:%S");
             }
-            
-            display.setCursor(2, 16);
+            //co2 stats
+
+            display.setCursor(2, LINE2_Y);
             if(co2_ppm > 1500) blinkColor(500); 
             if(co2_ppm != -1) display.printf("CO2: %d", co2_ppm);
             display.setTextColor(0x41);
 
-            display.setCursor(76, 16);
-            if(people_inside != -1) display.printf("Inside: %d", people_inside);
+            //power usage 
 
-            display.setCursor(150, 16);
+            display.setCursor(62, LINE2_Y);
             if(power_watts != -1) display.printf("%d W", power_watts);
+
+            /* //Temperature ^ & _ 
+
+            //adjust spacing, location of sensor in the lines. 
+
+            display.setCursor(97, LINE2_Y);
+            if(temp_up != -1) (display.printf("T^:%d C"), temp_up);
+
+            display.setCursor(115, LINE2_Y);
+            if(temp_down != -1) (display.printf("T_:%d C"), temp_down);
+
+            
+            //AC conditioner
+            display.setCursor(140, LINE2_Y);
+            if(ac_up != -1) (display.printf("AC^:%d C"), ac_up);
+
+            display.setCursor(170, LINE2_Y);
+            if(ac_orgy != -1) (display.printf("ACo:%d C"), ac_orgy);
+
+            */
+
+            display.setCursor(192, LINE3_Y);
+            display.printf(":3 Edie");
+
+            display.setCursor(2, LINE3_Y);
+            if(people_inside != -1) display.printf("Inside: %d", people_inside);
             ShowBuffer();
 
 

@@ -13,6 +13,11 @@
 const uint16_t WIDTH = 32 * 8;
 const uint8_t HEIGHT = 16 * 2;
 
+//line constonants
+const uint8_t LINE1_Y = 2;
+const uint8_t LINE2_Y = 12;
+const uint8_t LINE3_Y = 22;
+
 // LED Matrix pinout
 #define P_A    22
 #define P_B    21
