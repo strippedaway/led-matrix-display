@@ -270,29 +270,41 @@ void DrawFrame() {
             if(space_open != -1) {
                 if(space_open == 1) {
                     display.setTextColor(0x80);
-                    display.setCursor(160, LINE1_Y);
+                    display.setCursor(151, LINE1_Y);
                     display.print("Open");
                     display.setTextColor(0x41);
                 } else if(space_open == 0) {
-                    display.setCursor(150, LINE1_Y);
+                    display.setCursor(151, LINE1_Y);
                     display.print("Closed");
                 }
             }
+            
+            // arrow %c = 0x18
+            // arrow %c = 0x19
+            /*
+            for (short i = 0; i < 9; i++) {
+                display.setCursor(60 + i * 6, LINE3_Y);
+                display.printf("%c", 0x18 + i);
+            }
+            */
+
             // toilet occupation logic (no military operation pls)
+            
             //upstairs toilet
+
             if(wc_occupied == 1) {
                 blinkColor(1000);
-                display.setCursor(224, LINE1_Y);
-                display.print("WC^:X");
+                display.setCursor(218, LINE2_Y);
+                display.printf("WC%cX", 0x18);
                 display.setTextColor(0x41);
             } else if(wc_occupied == 0) {
-                display.setCursor(224, LINE1_Y);
-                display.print("WC^:o");
+                display.setCursor(218, LINE2_Y);
+                display.printf("WC%co", 0x18);
 
             } else if(wc_occupied == -1) {
                 blinkColor(500);
-                display.setCursor(224, LINE1_Y);
-                display.print("WC^:?");
+                display.setCursor(218, LINE2_Y);
+                display.printf("WC%c?", 0x18);
                 display.setTextColor(0x41);
             }
 
@@ -300,17 +312,17 @@ void DrawFrame() {
 
             if(wc_occupied == 1) {
                 blinkColor(1000);
-                display.setCursor(224, LINE2_Y);
-                display.print("WC_:X");
+                display.setCursor(242, LINE2_Y);
+                display.printf("%cX", 0x19);
                 display.setTextColor(0x41);
             } else if(wc_occupied == 0) {
-                display.setCursor(224, LINE2_Y);
-                display.print("WC_:o");
+                display.setCursor(242, LINE2_Y);
+                display.printf("%co", 0x19);
 
             } else if(wc_occupied == -1) {
                 blinkColor(500);
-                display.setCursor(224, LINE2_Y);
-                display.print("WC_:?");
+                display.setCursor(242, LINE2_Y);
+                display.printf("%c?", 0x19);
                 display.setTextColor(0x41);
             }
 
@@ -324,38 +336,61 @@ void DrawFrame() {
 
             display.setCursor(2, LINE2_Y);
             if(co2_ppm > 1500) blinkColor(500); 
-            if(co2_ppm != -1) display.printf("CO2: %d", co2_ppm);
+            if(co2_ppm != -1) display.printf("CO2 %d", co2_ppm);
             display.setTextColor(0x41);
 
             //power usage 
 
-            display.setCursor(62, LINE2_Y);
+            display.setCursor(152, LINE2_Y);
             if(power_watts != -1) display.printf("%d W", power_watts);
 
-            /* //Temperature ^ & _ 
+            //draft locations for temps: 
 
-            //adjust spacing, location of sensor in the lines. 
+            display.setCursor(192, LINE1_Y);
+            display.printf("T:%c25C", 0x18);
 
-            display.setCursor(97, LINE2_Y);
-            if(temp_up != -1) (display.printf("T^:%d C"), temp_up);
+            display.setCursor(230, LINE1_Y);
+            display.printf("%c25C", 0x19);
+            /*
+            display.setCursor(182, LINE2_Y);
+            display.printf("AC:%c25C", 0x18);
+            
+            display.setCursor(227, LINE2_Y);
+            display.printf("o25C");
+            */
 
-            display.setCursor(115, LINE2_Y);
+            //new draft logic for temps:
+
+            /*
+            temptVerifyPrint("T:", 0x18 temp_up, 104, LINE2_Y); 
+            temptVerifyPrint("", 0x19, temp_down, 138, LINE2_Y);
+            temptVerifyPrint("AC:", 0x18, ac_up, 172, LINE2_Y);
+            temptVerifyPrint("o", 0, ac_orgy, 214, LINE2_Y);
+            
+            //old drafts:
+
+            display.setCursor(104, LINE2_Y);
+            if(temp_up != -1) (display.printf("T^%dC"), temp_up);
+
+            display.setCursor(138, LINE2_Y);
             if(temp_down != -1) (display.printf("T_:%d C"), temp_down);
 
             
             //AC conditioner
-            display.setCursor(140, LINE2_Y);
-            if(ac_up != -1) (display.printf("AC^:%d C"), ac_up);
+            display.setCursor(172, LINE2_Y);
+            if(ac_up != -1) (display.printf("AC^%dC"), ac_up);
 
-            display.setCursor(170, LINE2_Y);
-            if(ac_orgy != -1) (display.printf("ACo:%d C"), ac_orgy);
+            display.setCursor(214, LINE2_Y);
+            if(ac_orgy != -1) (display.printf("ACo%dC"), ac_orgy);
 
             */
+
+            //wc status
 
             display.setCursor(192, LINE3_Y);
             display.printf(":3 Edie");
 
-            display.setCursor(2, LINE3_Y);
+            display.setCursor(61, LINE2_Y);
             if(people_inside != -1) display.printf("Inside: %d", people_inside);
             ShowBuffer();
 
@@ -424,3 +459,24 @@ void DisplayTask(void *pvParameters) {
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
+
+
+//temp assesment logic to prevent negatives/over 100C
+
+void temptVerifyPrint(const char* label, char arrow, int16_t temp, uint8_t x, uint8_t y) {
+    display.setCursor(x, y);
+    if (arrow == 0) {
+        if (temp < 0 || temp > 100){
+            display.printf("%s ?", label);
+        } else {
+            display.printf("%s%dC", label, temp);
+        }   
+        }else {     
+        if (temp < 0 || temp > 100){
+            display.printf("%c%s ?", arrow, label);
+        } else {
+            display.printf("%c%s%dC",arrow, label, temp);
+        } 
+    }
+}
+

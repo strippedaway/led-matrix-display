@@ -24,6 +24,23 @@ AsyncMqttClient mqttClient;
 #define MATRIX_DEBUGSCREEN_TOPIC "led-matrix/debug-screen"
 #define HOME_ASSISTANT_STATUS_TOPIC "homeassistant/status"
 
+// placeholder for downstairs toilet change precise definition
+// #define WC1_OCCUPIED_TOPIC "hass-states/sensor/toilet_presence/state"
+
+//#define AC_TEMP_UP_TOPIC "hass-states/climate/climate/lg_hvac/state"
+//#define AC_TEMP_ORGY_TOPIC "hass-states/climate/midea_climate/state"
+
+//#define TEMP_DOWN_TOPIC "hass-states/sensor/first_floor_temperature/state"
+//#define TEMP_UP_TOPIC "hass-states/sensor/second_floor_temperature/state"
+
+// placeholder copy for visibility
+// extern int16_t ac_up;
+// extern int16_t ac_orgy;
+
+// extern int16_t temp_down;
+// extern int16_t temp_up;
+
+
 char *topic_will;
 
 void PublishToMQTT(const char* type, const char* data) {
@@ -50,7 +67,7 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
   int16_t numPayload = -1;
   if(availableData) numPayload = (std::atof(strPayload.c_str()));
 
-
+  
   if(strcmp(topic, PEOPLE_COUNT_TOPIC) == 0) {
     people_inside = numPayload;
   } else if(strcmp(topic, SPACE_OPEN_TOPIC) == 0) {
@@ -85,7 +102,15 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
     if(numPayload == -69) ESP.restart();
   } else if(strcmp(topic, DOWNSTAIRS_CO2_TOPIC) == 0) {
     co2_ppm = numPayload;
-  } else if(strcmp(topic, MATRIX_ENABLED_TOPIC) == 0) {
+  }/* else if(strcmp(topic, AC_TEMP_UP_TOPIC) == 0) { // temp collection attempts
+    ac_up = numPayload;
+  } else if(strcmp(topic, AC_TEMP_ORGY_TOPIC) == 0){
+    ac_orgy = numPayload;
+  } else if(strcmp(topic, TEMP_UP_TOPIC) ==0){
+    temp_up = numPayload;
+  } else if(strcmp(topic, TEMP_DOWN_TOPIC) ==0){
+    temp_down = numPayload;
+  } */else if(strcmp(topic, MATRIX_ENABLED_TOPIC) == 0) {
     if(strncmp(payload, "off", len) == 0) {
       DisableMatrixTimer();
     } else {
@@ -117,6 +142,15 @@ void onMqttConnect(bool sessionPresent) {
     mqttClient.subscribe(MATRIX_ENABLED_TOPIC, 1);
     mqttClient.subscribe(MATRIX_DEBUGSCREEN_TOPIC, 1);
     mqttClient.subscribe(HOME_ASSISTANT_STATUS_TOPIC, 1);
+
+    //mqttClient.subscribe(AC_TEMP_UP_TOPIC, 1);
+    //mqttClient.subscribe(AC_TEMP_ORGY_TOPIC, 1);
+    
+    //mqttClient.subscribe(TEMP_DOWN_TOPIC, 1);
+    //mqttClient.subscribe(TEMP_UP_TOPIC, 1);
+
+    //mqttClient.subscribe(WC1_OCCUPIED_TOPIC, 1);
+
     mqttClient.publish(topic_will, 1, true, "online");
 }
 
