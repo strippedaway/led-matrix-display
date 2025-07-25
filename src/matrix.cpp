@@ -287,8 +287,6 @@ void DrawFrame() {
                 display.printf("%c", 0x18 + i);
             }
             */
-
-            // toilet occupation logic (no military operation pls)
             
             //upstairs toilet
 
@@ -351,15 +349,6 @@ void DrawFrame() {
 
             display.setCursor(230, LINE1_Y);
             display.printf("%c25C", 0x19);
-            /*
-            display.setCursor(182, LINE2_Y);
-            display.printf("AC:%c25C", 0x18);
-            
-            display.setCursor(227, LINE2_Y);
-            display.printf("o25C");
-            */
-
-            //new draft logic for temps:
 
             /*
             temptVerifyPrint("T:", 0x18 temp_up, 104, LINE2_Y); 
@@ -367,28 +356,10 @@ void DrawFrame() {
             temptVerifyPrint("AC:", 0x18, ac_up, 172, LINE2_Y);
             temptVerifyPrint("o", 0, ac_orgy, 214, LINE2_Y);
             
-            //old drafts:
-
-            display.setCursor(104, LINE2_Y);
-            if(temp_up != -1) (display.printf("T^%dC"), temp_up);
-
-            display.setCursor(138, LINE2_Y);
-            if(temp_down != -1) (display.printf("T_:%d C"), temp_down);
-
-            
-            //AC conditioner
-            display.setCursor(172, LINE2_Y);
-            if(ac_up != -1) (display.printf("AC^%dC"), ac_up);
-
-            display.setCursor(214, LINE2_Y);
-            if(ac_orgy != -1) (display.printf("ACo%dC"), ac_orgy);
-
             */
 
-            //wc status
-
-            display.setCursor(192, LINE3_Y);
-            display.printf(":3 Edie");
+            //display.setCursor(192, LINE3_Y);
+            //display.printf(":3 Edie");
 
             display.setCursor(61, LINE2_Y);
             if(people_inside != -1) display.printf("Inside: %d", people_inside);
